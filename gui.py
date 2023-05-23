@@ -1,3 +1,5 @@
+import math
+import sys
 import tkinter as tk
 from tkinter.font import Font
 from PIL import ImageTk, Image  
@@ -5,91 +7,135 @@ from simplexity import GameState, Simplexity, heuristic
 from ai_player import ai_player
 from variables import *
 from checkers import *
+import pygame
+from grid import Grid,Square
+from piece import Piece
+
+def button(screen, position, text):
+    font = pygame.font.SysFont("Arial", 50)
+    text_render = font.render(text, 1, (255, 0, 0))
+    x, y, w , h = text_render.get_rect()
+    x, y = position
+    pygame.draw.line(screen, (150, 150, 150), (x, y), (x + w , y), 5)
+    pygame.draw.line(screen, (150, 150, 150), (x, y - 2), (x, y + h), 5)
+    pygame.draw.line(screen, (50, 50, 50), (x, y + h), (x + w , y + h), 5)
+    pygame.draw.line(screen, (50, 50, 50), (x + w , y+h), [x + w , y], 5)
+    pygame.draw.rect(screen, (100, 100, 100), (x, y, w , h))
+    #print("screen.blit...", screen.blit(text_render, (x, y)))
+    return screen.blit(text_render, (x, y)) # this is a rect pygame.Rect
+
+def draw_board(board:Grid):
+	for c in range(COLS):
+		for r in range(ROWS):
+			pygame.draw.rect(screen, BLUE_COLOR, (c*SQUARESIZE, r*SQUARESIZE+SQUARESIZE, SQUARESIZE, SQUARESIZE))
+			pygame.draw.rect(screen, BLACK_COLOR, (int(c*SQUARESIZE+SQUARESIZE/3), int(r*SQUARESIZE+SQUARESIZE+SQUARESIZE/3), SQUARESIZE, SQUARESIZE))
+	
+	for c in range(COLS):
+		for r in range(ROWS):		
+			if board.get_square(r,c).is_empty():
+				continue
+			piece:Piece = board.get_square(r,c).get_piece()
+			if piece.get_shape() == ROUND:
+				if(piece.get_color() == WHITE):
+					pygame.draw.circle(screen, WHITE_COLOR, (int(c*SQUARESIZE+SQUARESIZE/2), height-int((ROWS-1-r)*SQUARESIZE+SQUARESIZE/2)), RADIUS)
+				else: pygame.draw.circle(screen, RED_COLOR, (int(c*SQUARESIZE+SQUARESIZE/2), height-int((ROWS-1-r)*SQUARESIZE+SQUARESIZE/2)), RADIUS)
+			else:
+				if(piece.get_color() == WHITE):
+					pygame.draw.rect(screen, WHITE_COLOR, (int(c*SQUARESIZE+SQUARESIZE/2), height-int((ROWS-1-r)*SQUARESIZE+SQUARESIZE/2), SQUARESIZE, SQUARESIZE))
+				else: pygame.draw.rect(screen, RED_COLOR, (int(c*SQUARESIZE+SQUARESIZE/2), height-int((ROWS-1-r)*SQUARESIZE+SQUARESIZE/2), SQUARESIZE, SQUARESIZE))
+	pygame.display.update()
 
 
-class Options(tk.Frame):
-    def __init__(self,parent,controller):
-       tk.Frame.__init__(self,parent)
-       self.controller=controller
-       self.pixel = tk.PhotoImage(width=1, height=1)
-       self.v = tk.IntVar()
-       self.v.set(1)
-       label=tk.Label(self,text="Game mode:")
-       radio1=tk.Radiobutton(self,value=1,padx=10,compound="center",width=50,height=50,image=self.pixel,text="Against IA",variable=self.v)
 
-       radio2=tk.Radiobutton(self,image=self.pixel,padx=10,compound="center",width=50,height=50,value=2,text="2 Humans",variable=self.v)
-       button = tk.Button(self,text="Play",image=self.pixel,compound="center",width=50,height=50,command=lambda:  controller.show("Game"))
-       label.pack(side="left")
+if __name__=="__main__":
+	game = Simplexity()
+	state = game.initial
+	board = state.grid
+	current_shape=ROUND
+	pygame.init()
 
-       radio1.pack(side="left")
-       radio2.pack(side="left")
-       button.pack(side="left")
+	
 
-    def getValue(self):
-           return self.v.get()
+	width = COLS * SQUARESIZE
+	height = (ROWS+1) * SQUARESIZE
+	size = (width,720)
+
+	RADIUS = int(SQUARESIZE/2 - 5)
+
+	screen = pygame.display.set_mode(size)
+	b1 = button(screen, (0, 600), "Change piece")
+	draw_board(board)
+	pygame.display.update()
+
+	myfont = pygame.font.SysFont("monospace", 75)
+
+	turn = state.to_move
+	end = False
+
+	while (not end):
+		label = myfont.render(f" Tocca al {COLOURS[state.to_move]}\nHai a disposizione {state.pieces[state.to_move][SQUARE]} quadrati  e {state.pieces[state.to_move][ROUND]} cerchi \n ", 1, WHITE_COLOR)
+		screen.blit(label,(0,700))
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				sys.exit()
+			
+			if event.type == pygame.MOUSEMOTION:
+				pygame.draw.rect(screen, BLACK_COLOR, (0,0, width, SQUARESIZE))
+				posx = event.pos[0]
+				if turn == WHITE:
+					if(current_shape == ROUND):
+						pygame.draw.circle(screen, WHITE_COLOR, (posx, int(SQUARESIZE/2)), RADIUS)
+					else:
+						pygame.draw.rect(screen, WHITE_COLOR, (posx, int(SQUARESIZE/2), SQUARESIZE, SQUARESIZE))
+
+			pygame.display.update()
+
+			if event.type==pygame.MOUSEBUTTONDOWN:
+				pygame.draw.rect(screen, BLACK_COLOR, (0,0, width, SQUARESIZE))
+				if b1.collidepoint(pygame.mouse.get_pos()):
+					current_shape = SQUARE if current_shape==ROUND else ROUND
+				else:
+					if(turn == WHITE):
+						posx = event.pos[0]
+						col = int(math.floor(posx/SQUARESIZE))
+						grid=state.grid
+						pieces=state.pieces
+						piece = Piece(current_shape,state.to_move)
+						row=grid.make_move(col,piece)
+
+						if(row < 0):
+							continue
+						pieces[state.to_move][current_shape]-=1
+						state=GameState(to_move=abs(state.to_move-1),grid=grid,pieces=pieces,utility=0)
+						result=checkWin(board, (row,col))
+
+						if (result>=0):
+							label = myfont.render("Ha vinto", COLOURS[result])
+							screen.blit(label, (40,10))
+							end = True
+						turn = abs(turn - 1)
+						draw_board(state.grid)
+						print(state.grid)
+		
+						
+		if(turn==RED and not end):
+			move=ai_player(game,state)
+			grid=state.grid
+			pieces=state.pieces
+			piece = Piece(move.shape,state.to_move)
+			grid.make_move(move.column,piece)
     
-class Game(tk.Frame):
-    def __init__(self, parent,controller):
-        tk.Frame.__init__(self, parent)
+			pieces[state.to_move][move.shape]-=1
+			state=GameState(to_move=abs(state.to_move-1),grid=grid,pieces=pieces,utility=0)
+			result=checkWin(board, (row,col))
+			if (result>=0):
+				label = myfont.render("Ha vinto", COLOURS[result])
+				screen.blit(label, (40,10))
+				end = True
+			draw_board(state.grid)
+			turn = abs(turn - 1)
+			print(state.grid)
+
+			
         
-        self.pixel = tk.PhotoImage(width=1, height=1)
-        self.rc = tk.PhotoImage(file="images/Red_Circle(small).svg.png")
-        self.rc=self.rc.subsample(50,50)
-        self.rs = tk.PhotoImage(file="images/rs.png")
-        
-        for row in range(6):
-            for col in range(7):
-                button = tk.Button(self,image=self.pixel,width=50,height=50,command=lambda: move(col,controller.getOption()))
-                button.grid(row=row,column=col)
-
-        label=tk.Label(self,text="Pezzi a disposizione:")
-        roundedbutton = tk.Label(self, image=self.rc,border=0,text="10",compound="center")
-        squaredbutton = tk.Label(self, image=self.rs,border=0,text="10",compound="center")
-
-        roundedbutton.grid()
-        squaredbutton.grid()
-class MainView(tk.Tk):
-    def __init__(self, *args, **kwargs):
-        tk.Tk.__init__(self, *args, **kwargs)
-        container = tk.Frame(self)
-        container.pack(side="top", fill="both", expand=True)
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1)
-        self.frames ={}
-
-        self.frames["Options"] = Options(parent=container, controller=self)
-        self.frames["Game"] = Game(parent=container, controller=self)
-
-        self.frames["Options"].grid(row=0, column=0, sticky="nsew")
-        self.frames["Game"].grid(row=0, column=0, sticky="nsew")
-
-        
-        self.show("Options")
-
-    def show(self,page_name):
-        frame = self.frames[page_name]
-        frame.tkraise()    
-
-    def getOption(self):
-        return self.frames["Options"].getValue()
-
-
-
-if __name__ == "__main__":
-    app= MainView()
-    ###app.geometry("600x600")
-    app.title("Simplexity")
-    app.resizable(False, False)
-    app.configure()
-    app.mainloop()
-
-
-def move(col,option):
-    return
-
-def startGame(option,controller):
-    controller.show("Game")
-    game=Simplexity()
-    end = False
-    state=game.initial  
-    
+	

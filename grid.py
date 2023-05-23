@@ -20,6 +20,8 @@ class Grid:
         self.matrix[r][c].empty=False
     def make_move(self,c,piece):
         r=self.get_row_empty(c)
+        if r<0:
+            return r
         self.matrix[r][c].set_piece(piece)
         self.matrix[r][c].empty=False
         self.heights[c]-=1
