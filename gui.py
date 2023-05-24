@@ -1,9 +1,5 @@
-import math
-import sys
-import tkinter as tk
-from tkinter.font import Font
-from PIL import ImageTk, Image  
-from simplexity import GameState, Simplexity, heuristic
+import math 
+from simplexity import GameState, Simplexity
 from ai_player import ai_player
 from variables import *
 from checkers import *
@@ -110,7 +106,7 @@ if __name__=="__main__":
 						result=checkWin(board, (row,col))
 
 						if (result>=0):
-							label = myfont.render("Ha vinto", COLOURS[result])
+							label = myfont.render(f"Ha vinto {COLOURS[result]}",1,WHITE_COLOR )
 							screen.blit(label, (40,10))
 							end = True
 						turn = abs(turn - 1)
@@ -129,7 +125,7 @@ if __name__=="__main__":
 			state=GameState(to_move=abs(state.to_move-1),grid=grid,pieces=pieces,utility=0)
 			result=checkWin(board, (row,col))
 			if (result>=0):
-				label = myfont.render("Ha vinto", COLOURS[result])
+				label = myfont.render(f"Ha vinto {COLOURS[result]}",1,WHITE_COLOR )
 				screen.blit(label, (40,10))
 				end = True
 			draw_board(state.grid)
