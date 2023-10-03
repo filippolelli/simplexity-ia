@@ -125,13 +125,13 @@ def evalSquare(square, player):
     if(square.is_empty()):
         return 0.01
     if(square.get_piece().get_color()==player):
-        count+=0.5
+        count+=0.2
     else:
-        count-=0.5
+        count-=0.2
     if(square.get_piece().get_shape()==player):
-        count+=1  
+        count+=0.4  
     else:
-        count-=1
+        count-=0.4
         
                 
     return count
@@ -146,6 +146,7 @@ def evalBoard(grid:Grid,player):
             count=0
             for c1 in range(c,c+PIECESTOWIN):
                 count+=evalSquare(grid.get_square(r,c1),player)
+    
             punteggio += count
     
     # valutazione delle colonne
@@ -175,9 +176,7 @@ def evalBoard(grid:Grid,player):
         for c in range(COLS - (PIECESTOWIN-1)):
             count=0
             for r1,c1 in zip(range(r,r-PIECESTOWIN,-1),range(c,c+PIECESTOWIN)):
-                
                 count+=evalSquare(grid.get_square(r1,c1),player)
-            
             punteggio += count
   
     return punteggio
@@ -197,4 +196,4 @@ def evalPieces(pieces,player):
 
 def heuristic(grid:Grid,player,pieces):
     boardval=evalBoard(grid,player)
-    return (boardval+20*evalPieces(pieces,player))
+    return (boardval+evalPieces(pieces,player))

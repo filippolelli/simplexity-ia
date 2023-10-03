@@ -25,11 +25,13 @@ def button(screen, position, text):
     return screen.blit(text_render, (x, y)) # this is a rect pygame.Rect
 
 def draw_board(board:Grid):
+	pygame.draw.rect(screen, BLUE_COLOR, (0, SQUARESIZE, SQUARESIZE*7, SQUARESIZE*8))
 	for c in range(COLS):
 		for r in range(ROWS):
-			pygame.draw.rect(screen, BLUE_COLOR, (c*SQUARESIZE, r*SQUARESIZE+SQUARESIZE, SQUARESIZE, SQUARESIZE))
-			pygame.draw.rect(screen, BLACK_COLOR, (int(c*SQUARESIZE+SQUARESIZE/3), int(r*SQUARESIZE+SQUARESIZE+SQUARESIZE/3), SQUARESIZE, SQUARESIZE))
+			pygame.draw.rect(screen, BLACK_COLOR, (int(c*SQUARESIZE+SQUARESIZE/3), int(r*SQUARESIZE+SQUARESIZE+SQUARESIZE/3), SQUARESIZE-20, SQUARESIZE-20))
 	
+	
+
 	for c in range(COLS):
 		for r in range(ROWS):		
 			if board.get_square(r,c).is_empty():
@@ -41,8 +43,8 @@ def draw_board(board:Grid):
 				else: pygame.draw.circle(screen, RED_COLOR, (int(c*SQUARESIZE+SQUARESIZE/2), height-int((ROWS-1-r)*SQUARESIZE+SQUARESIZE/2)), RADIUS)
 			else:
 				if(piece.get_color() == WHITE):
-					pygame.draw.rect(screen, WHITE_COLOR, (int(c*SQUARESIZE+SQUARESIZE/2), height-int((ROWS-1-r)*SQUARESIZE+SQUARESIZE/2), SQUARESIZE, SQUARESIZE))
-				else: pygame.draw.rect(screen, RED_COLOR, (int(c*SQUARESIZE+SQUARESIZE/2), height-int((ROWS-1-r)*SQUARESIZE+SQUARESIZE/2), SQUARESIZE, SQUARESIZE))
+					pygame.draw.rect(screen, WHITE_COLOR, (int(c*SQUARESIZE+SQUARESIZE/2), height-int((ROWS-1-r)*SQUARESIZE+SQUARESIZE/2), SQUARESIZE-20, SQUARESIZE-20))
+				else: pygame.draw.rect(screen, RED_COLOR, (int(c*SQUARESIZE+SQUARESIZE/2), height-int((ROWS-1-r)*SQUARESIZE+SQUARESIZE/2), SQUARESIZE-20, SQUARESIZE-20))
 	pygame.display.update()
 
 
@@ -60,7 +62,7 @@ if __name__=="__main__":
 	height = (ROWS+1) * SQUARESIZE
 	size = (width,720)
 
-	RADIUS = int(SQUARESIZE/2 - 5)
+	RADIUS = int(SQUARESIZE/3 - 5)
 
 	screen = pygame.display.set_mode(size)
 	b1 = button(screen, (0, 600), "Change piece")
