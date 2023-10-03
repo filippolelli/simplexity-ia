@@ -1,7 +1,7 @@
 ROWS = 6
 COLS = 7
 PIECESTOWIN = 4
-COLOURS = ("W", "R")
+COLOURS = ("WHITE", "RED")
 EMPTY = " E "
 SHAPES = ("O", "X")
 SHAPES_EXT=("ROUND","SQUARE")

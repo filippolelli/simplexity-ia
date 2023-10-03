@@ -196,4 +196,4 @@ def evalPieces(pieces,player):
 
 def heuristic(grid:Grid,player,pieces):
     boardval=evalBoard(grid,player)
-    return (boardval+evalPieces(pieces,player))
+    return (boardval+0*evalPieces(pieces,player))

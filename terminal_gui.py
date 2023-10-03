@@ -64,7 +64,7 @@ while (not end):
     if (result>=0):
         print("Ha vinto",COLOURS[result])
         end = True
-        print("Average time for AI move:",totaltime/aimoves,"s")
+        #print("Average time for AI move:",totaltime/aimoves,"s")
     if (state.pieces[RED][ROUND]==0 and state.pieces[RED][SQUARE]==0):
         print("Pareggio")
         end=True
