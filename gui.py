@@ -1,4 +1,5 @@
-import math 
+import math
+import sys 
 from simplexity import GameState, Simplexity
 from ai_player import ai_player
 from variables import *
