@@ -1,4 +1,4 @@
-from variables import COLOURS, EMPTY, RED, SHAPES
+from variables import RED, ROUND
 
 
 class Grid:
@@ -22,6 +22,7 @@ class Grid:
         r=self.get_row_empty(c)
         if r<0:
             return r
+    
         self.matrix[r][c].set_piece(piece)
         self.matrix[r][c].empty=False
         self.heights[c]-=1
@@ -41,11 +42,11 @@ class Square:
             self.empty=True
     def __str__(self):
         if(self.empty):
-            return f"\033[94m{EMPTY}\033[0m"
+            return f"\033[94m{' E '}\033[0m"
         else:
             if(self.piece.get_color()==RED):
-                return f" \033[91m{SHAPES[self.piece.get_shape()]}\033[0m "
-            return f" {SHAPES[self.piece.get_shape()]} "
+                return f" \033[91m{'O' if self.piece.get_shape()==ROUND else 'X'}\033[0m "
+            return f" {'O' if self.piece.get_shape()==ROUND else 'X'} "
 
     def is_empty(self):
         return self.empty

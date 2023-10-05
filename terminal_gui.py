@@ -9,7 +9,7 @@ from checkers import *
 game=Simplexity()
 
 print("SIMPLEXITY")
-print("Formato mossa: NUMERO_COLONNA(1-7) PEZZO(0/1)")
+print("Formato mossa: NUMERO_COLONNA(1-7) PEZZO(${ROUND}/${SQUARE})")
 print()
 
 while(True):
@@ -33,7 +33,7 @@ aimoves=0
 totaltime=0
 while (not end):
     print(f"Hai a disposizione {state.pieces[state.to_move][SQUARE]} quadrati  e {state.pieces[state.to_move][ROUND]} cerchi ")
-    print("Tocca al ",COLOURS[state.to_move])
+    print("Tocca al ",state.to_move)
     valutazione=heuristic(state.grid,state.to_move,state.pieces)
     if(state.to_move==WHITE):
             print("Valutazione:",valutazione)
@@ -52,17 +52,21 @@ while (not end):
     grid=state.grid
     pieces=state.pieces
     piece = Piece(move.shape,state.to_move)
+    if pieces[state.to_move][move.shape]<=0:
+        continue
     row=grid.make_move(move.column,piece)
-    
+
+    if(row < 0):
+         continue
     pieces[state.to_move][move.shape]-=1
-    state=GameState(to_move=abs(state.to_move-1),grid=grid,pieces=pieces,utility=0)
+    state=GameState(to_move=RED if state.to_move==WHITE else WHITE,grid=grid,pieces=pieces,utility=0)
 
     print(state.grid)
     
     
     result= checkWin(state.grid, (row,move.column))
-    if (result>=0):
-        print("Ha vinto",COLOURS[result])
+    if (result!=-1):
+        print("Ha vinto ",result)
         end = True
         #print("Average time for AI move:",totaltime/aimoves,"s")
     if (state.pieces[RED][ROUND]==0 and state.pieces[RED][SQUARE]==0):

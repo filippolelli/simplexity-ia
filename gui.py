@@ -1,13 +1,13 @@
 import math
-import sys 
+import sys
+from human_player import Move 
 from simplexity import GameState, Simplexity
 from ai_player import ai_player
 from variables import *
 from checkers import *
 import pygame
-from grid import Grid,Square
+from grid import Grid
 from piece import Piece
-
 def button(screen, position, text):
     font = pygame.font.SysFont("Arial", 50)
     text_render = font.render(text, 1, (255, 0, 0))
@@ -52,26 +52,25 @@ def draw_board(board:Grid):
 if __name__=="__main__":
 	game = Simplexity()
 	state = game.initial
-	board = state.grid
 	current_shape=ROUND
 	pygame.init()
 
 	
 
 	width = COLS * SQUARESIZE + SQUARESIZE/3
-	height = (ROWS+1) * SQUARESIZE
-	size = (width,720)
+	height = (ROWS+3) * SQUARESIZE
+	size = (width,height)
 
 	RADIUS = int(SQUARESIZE/3 - 3)
 	
 	screen = pygame.display.set_mode(size)
 	b1 = button(screen, (0, 600), "Change piece")
-	draw_board(board)
+	draw_board(state.grid)
 	pygame.display.update()
 
 	myfont = pygame.font.SysFont("Arial",20)
 
-	turn = state.to_move
+
 	end = False
 
 	while (not end):
@@ -85,7 +84,7 @@ if __name__=="__main__":
 			if event.type == pygame.MOUSEMOTION:
 				pygame.draw.rect(screen, BLACK_COLOR, (0,0, width, SQUARESIZE))
 				posx = event.pos[0]
-				if turn == WHITE:
+				if state.to_move == WHITE:
 					if(current_shape == ROUND):
 						pygame.draw.circle(screen, WHITE_COLOR, (posx, int(5*SQUARESIZE/3-SQUARESIZE)), RADIUS)
 					else:
@@ -98,30 +97,36 @@ if __name__=="__main__":
 				if b1.collidepoint(pygame.mouse.get_pos()):
 					current_shape = SQUARE if current_shape==ROUND else ROUND
 				else:
-					if(turn == WHITE):
+					if(state.to_move == WHITE):
 						posx = event.pos[0]
 						col = int(min(6,math.floor(posx/SQUARESIZE)))
 						grid = state.grid
 						pieces = state.pieces
+						if pieces[state.to_move][current_shape]<=0:
+							continue
 						piece = Piece(current_shape,state.to_move)
 						row=grid.make_move(col,piece)
-
+						move=Move(shape=current_shape,column=col)
 						if(row < 0):
 							continue
 						pieces[state.to_move][current_shape]-=1
-						state=GameState(to_move=abs(state.to_move-1),grid=grid,pieces=pieces,utility=0)
+						
+						#state=game.result(state,move)
+						
+
+						state=GameState(to_move=RED if state.to_move==WHITE else WHITE,grid=grid,pieces=pieces,utility=0)
 						result=checkWin(state.grid, (row,col))
-						if (result>=0):
+						if (result!=-1):
 							pygame.draw.rect(screen, BLACK_COLOR, (265,600, width-265, 30))
-							label = myfont.render(f"Ha vinto {COLOURS[result]}",1,WHITE_COLOR )
+							label = myfont.render(f"Ha vinto {result}",1,WHITE_COLOR )
 							screen.blit(label,(265,600))
 							end = True
-						turn = abs(turn - 1)
+			
 						draw_board(state.grid)
-						print(state.grid)
 		
 						
-		if(turn==RED and not end):
+		if(state.to_move==RED and not end):
+			
 			move=ai_player(game,state)
 			grid=state.grid
 			pieces=state.pieces
@@ -129,17 +134,18 @@ if __name__=="__main__":
 			row = grid.make_move(move.column,piece)
     
 			pieces[state.to_move][move.shape]-=1
-			state=GameState(to_move=abs(state.to_move-1),grid=grid,pieces=pieces,utility=0)
+			
+			#state=game.result(state,move)
+			state=GameState(to_move=RED if state.to_move==WHITE else WHITE,grid=grid,pieces=pieces,utility=0)
 			result=checkWin(state.grid, (row,move.column))
 
-			if (result>=0):
+			if (result!=-1):
 				pygame.draw.rect(screen, BLACK_COLOR, (265,600, width-265, 30))
-				label = myfont.render(f"Ha vinto {COLOURS[result]}",1,WHITE_COLOR )
+				label = myfont.render(f"Ha vinto {result}",1,WHITE_COLOR )
 				screen.blit(label,(265,600))
 				end = True
 			draw_board(state.grid)
-			turn = abs(turn - 1)
-			print(state.grid)
+			
 
 	pygame.time.wait(3000)
         

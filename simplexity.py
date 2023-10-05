@@ -23,10 +23,10 @@ class Simplexity:
         self.r = r
         self.c = c
         self.k = k
-        self.initial=GameState(to_move=WHITE,pieces=[[N_ROUND, N_SQUARE],[N_ROUND,N_SQUARE]],grid=Grid(),utility=0)
+        self.initial=GameState(to_move=WHITE,pieces={WHITE:{ROUND:N_ROUND, SQUARE: N_SQUARE},RED:{ROUND:N_ROUND, SQUARE: N_SQUARE}},grid=Grid(),utility=0)
     def actions(self, state):
         col=(c for c in range (0,self.c) if state.grid.get_row_empty(c)>=0) ###colonna ok se non piena
-        pieces=list((p for p in range(0,2) if state.pieces[state.to_move][p]!=0)) ###shape ok se ne è rimasta almeno una
+        pieces=list((shape for shape in (ROUND,SQUARE) if state.pieces[state.to_move][shape]>0)) ###shape ok se ne è rimasta almeno una
         moves=[]
         def sorting(colonna):
             return abs(colonna-math.floor(self.c/2))
@@ -44,8 +44,8 @@ class Simplexity:
         piece = Piece(move.shape,state.to_move)
         row=grid.make_move(move.column,piece)
         pieces[state.to_move][move.shape]-=1
-
-        return GameState(to_move=abs(state.to_move-1),grid=grid,pieces=pieces,utility=self.compute_utility(grid,pieces, (row,move.column),player=abs(state.to_move-1)))
+        turn=RED if state.to_move==WHITE else WHITE
+        return GameState(to_move=turn,grid=grid,pieces=pieces,utility=self.compute_utility(grid,pieces, (row,move.column),player=turn))
 
     def utility(self, state, player):
         return state.utility if player == WHITE else -state.utility
@@ -57,7 +57,6 @@ class Simplexity:
 
     def compute_utility(self, grid:Grid,pieces, move,player): 
         
-        result = 0
         result= checkWin(grid,move)
         if (result==WHITE):
             return 100000
@@ -94,29 +93,6 @@ class Simplexity:
                     return self.utility(state, self.to_move(self.initial))
 
 
-def evalLine(line, player):
-    
-    count=0
-    square:Square
-    countColor=[0,0]
-    countShape=[0,0]
-    in_a_row_color=[0,0]
-    in_a_row_shape=[0,0]
-    for square in line:
-        if(square.is_empty()):
-            count+=0.01
-            continue
-        if(square.get_piece().get_color()==player):
-            count+=0.5
-        else:
-            count-=0.5
-        if(square.get_piece().get_shape()==player):
-            count+=1  
-        else:
-            count-=1
-        
-                
-    return count
 
 def evalSquare(square, player):
     
@@ -128,7 +104,7 @@ def evalSquare(square, player):
         count+=0.2
     else:
         count-=0.2
-    if(square.get_piece().get_shape()==player):
+    if((square.get_piece().get_shape()==ROUND and player==WHITE) or (square.get_piece().get_shape()==SQUARE and player==RED)):
         count+=0.4  
     else:
         count-=0.4
@@ -184,8 +160,8 @@ def evalBoard(grid:Grid,player):
 def evalPieces(pieces,player):
     player_round=pieces[player][ROUND]
     player_square=pieces[player][SQUARE]
-    other_player_round=pieces[abs(player-1)][ROUND]
-    other_player_square=pieces[abs(player-1)][SQUARE]
+    other_player_round=pieces[RED if player==WHITE else WHITE][ROUND]
+    other_player_square=pieces[RED if player==WHITE else WHITE][SQUARE]
     punteggio = 0
 
     if(player ==WHITE):
