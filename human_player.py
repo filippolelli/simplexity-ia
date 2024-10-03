@@ -1,31 +1,50 @@
 from collections import namedtuple
+from variables import ROUND, COLS, SQUARE
 
-from variables import  ROUND, COLS, SQUARE
+Move = namedtuple("Move", "column, shape")
 
-Move=namedtuple("Move","column, shape")
 def human_player(state):
-    while(True):
-        raw = input("Prossima mossa ("+state.to_move+"):")
-        mossa = raw.strip().split()
-        if (len(mossa) != 2):
-            print("Formato mossa errato, riprova")
-            continue
-        if (not mossa[0].isdigit() or (mossa[1]!=SQUARE and mossa[1]!=ROUND)):
-            print("Formato mossa errato, riprova")
-            continue
-        col = int(mossa[0])-1
-        shape=mossa[1]
-        if (col < 0 or col > COLS-1):
-            print("Colonna non esistente, riprova")
-            continue
-        
-        if (not state.grid.get_square(0,col).is_empty()):
-            print("Colonna già piena, riprova")
-            continue
-        
-        if (state.pieces[state.to_move][shape] == 0):
-            print("Hai terminato i pezzi",shape," ! Riprova")
-            continue
+    """Prompts the human player to make a move and validates the input."""
+    while True:
+        # Prompt the player for input
+        raw = input(f"Prossima mossa ({state.to_move}): ").strip()
+        parts = raw.split()
 
-        break  
-    return Move(shape=shape,column=col)
+        # Validate input format
+        if len(parts) != 2:
+            print("Formato mossa errato, riprova.")
+            continue
+        
+        col_str, shape = parts
+        
+        # Validate column input
+        if not col_str.isdigit():
+            print("Formato mossa errato, riprova.")
+            continue
+        
+        col = int(col_str) - 1
+        
+        if col < 0 or col >= COLS:
+            print("Colonna non esistente, riprova.")
+            continue
+        
+        # Validate shape input
+        if shape not in (SQUARE, ROUND):
+            print("Formato mossa errato, riprova.")
+            continue
+        
+        # Check if column is full
+        if state.grid.get_empty_row(col) == -1:
+            print("Colonna già piena, riprova.")
+            continue
+        
+        # Check if the player has the selected shape
+        if state.pieces[state.to_move][shape] == 0:
+            print(f"Hai terminato i pezzi {shape}! Riprova.")
+            continue
+        
+        #break
+        # If all checks pass, return the move
+        print(col)
+        print(shape)
+        return Move(column=col, shape=shape)

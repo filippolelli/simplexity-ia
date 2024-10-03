@@ -1,6 +1,6 @@
 import numpy as np
 
-def alpha_beta_cutoff_search(state, game, d=4, cutoff_test=None, eval_fn=None):
+def alpha_beta_cutoff_search(state, game, d=5, cutoff_test=None, eval_fn=None):
     """Search game to determine best action; use alpha-beta pruning.
     This version cuts off search and uses an evaluation function."""
 
@@ -43,7 +43,7 @@ def alpha_beta_cutoff_search(state, game, d=4, cutoff_test=None, eval_fn=None):
             best_action = a
     return best_action
 
-def ai_player(game, state):
+def ai_player_depth_5(game, state):
     return alpha_beta_cutoff_search(state, game)
 
 
